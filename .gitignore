@@ -1,0 +1,9 @@
+.*.swp
+*~
+RELEASE-VERSION
+*egg-info
+log
+test.log
+tags
+*.pyc
+.dir-locals.el
