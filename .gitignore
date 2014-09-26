@@ -8,3 +8,4 @@ tags
 *.pyc
 .dir-locals.el
 java/target
+python/dist
