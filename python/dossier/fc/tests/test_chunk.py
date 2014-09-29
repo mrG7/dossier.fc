@@ -8,14 +8,14 @@ from __future__ import absolute_import, division, print_function
 
 from StringIO import StringIO
 
-from dossier.fc import FeatureCollection, FeatureCollectionCborChunk
+from dossier.fc import FeatureCollection, FeatureCollectionChunk
 
 def test_fc_chunk():
     fc1 = FeatureCollection({'NAME': {'foo': 2, 'baz': 1}})
     fc2 = FeatureCollection({'NAME': {'foo': 4, 'baz': 2}})
 
     fh = StringIO()
-    chunk = FeatureCollectionCborChunk(file_obj=fh, mode='wb')
+    chunk = FeatureCollectionChunk(file_obj=fh, mode='wb')
     chunk.add(fc1)
     chunk.add(fc2)
     chunk.flush()
@@ -23,7 +23,7 @@ def test_fc_chunk():
     blob = fh.getvalue()
     assert blob
     fh = StringIO(blob)
-    chunk = FeatureCollectionCborChunk(file_obj=fh, mode='rb')
+    chunk = FeatureCollectionChunk(file_obj=fh, mode='rb')
     rfc1, rfc2 = list(chunk)
     assert fc1 == rfc1
     assert fc2 == rfc2

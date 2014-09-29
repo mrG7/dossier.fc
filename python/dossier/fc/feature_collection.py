@@ -154,9 +154,9 @@ def is_counter(obj):
     return isinstance(obj, collections.Counter)
 
 
-class FeatureCollectionCborChunk(streamcorpus.CborChunk):
+class FeatureCollectionChunk(streamcorpus.CborChunk):
     '''
-    A :class:`FeatureCollectionCborChunk` provides a way to serialize
+    A :class:`FeatureCollectionChunk` provides a way to serialize
     a colllection of feature collections to a single blob of data.
 
     Here's an example that writes two feature collections to an existing
@@ -166,7 +166,7 @@ class FeatureCollectionCborChunk(streamcorpus.CborChunk):
         fc2 = FeatureCollection({'NAME': {'foo': 4, 'baz': 2}})
 
         fh = StringIO()
-        chunk = FeatureCollectionCborChunk(file_obj=fh, mode='wb')
+        chunk = FeatureCollectionChunk(file_obj=fh, mode='wb')
         chunk.add(fc1)
         chunk.add(fc2)
         chunk.flush()
@@ -175,7 +175,7 @@ class FeatureCollectionCborChunk(streamcorpus.CborChunk):
     an iterable of the feature collections that were written::
 
         fh = StringIO(fh.getvalue())
-        chunk = FeatureCollectionCborChunk(file_obj=fh, mode='rb')
+        chunk = FeatureCollectionChunk(file_obj=fh, mode='rb')
         rfc1, rfc2 = list(chunk)
         assert fc1 == rfc1
         assert fc2 == rfc2
@@ -184,7 +184,7 @@ class FeatureCollectionCborChunk(streamcorpus.CborChunk):
         kwargs['write_wrapper'] = FeatureCollection.to_dict
         kwargs['read_wrapper'] = FeatureCollection.from_dict
         kwargs['message'] = lambda x: x
-        super(FeatureCollectionCborChunk, self).__init__(*args, **kwargs)
+        super(FeatureCollectionChunk, self).__init__(*args, **kwargs)
 
 
 class FeatureCollection(collections.MutableMapping):

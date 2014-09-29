@@ -26,7 +26,7 @@ applications.
 Feature collections can be serialized to :rfc:`7049` CBOR format,
 similar to a binary JSON representation.  They can also be stored
 sequentially in flat files using
-:class:`dossier.fc.FeatureCollectionCborChunk` as an accessor.
+:class:`dossier.fc.FeatureCollectionChunk` as an accessor.
 
 .. autoclass:: FeatureCollection
    :show-inheritance:
@@ -34,7 +34,7 @@ sequentially in flat files using
 .. autoclass:: StringCounter
    :show-inheritance:
 
-.. autoclass:: FeatureCollectionCborChunk
+.. autoclass:: FeatureCollectionChunk
    :show-inheritance:
 
 .. autoclass:: ReadOnlyException
@@ -49,12 +49,12 @@ sequentially in flat files using
 
 '''
 from dossier.fc.feature_collection import \
-    FeatureCollection, FeatureCollectionCborChunk
+    FeatureCollection, FeatureCollectionChunk
 from dossier.fc.string_counter import StringCounter
 from dossier.fc.exceptions import ReadOnlyException, SerializationError
 
 __all__ = [
-    'FeatureCollection', 'FeatureCollectionCborChunk',
+    'FeatureCollection', 'FeatureCollectionChunk',
     'StringCounter',
     'ReadOnlyException', 'SerializationError',
 ]

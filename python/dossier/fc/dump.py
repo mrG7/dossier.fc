@@ -7,7 +7,7 @@
 from operator import itemgetter
 import sys
 
-from dossier.fc import StringCounter, FeatureCollectionCborChunk
+from dossier.fc import StringCounter, FeatureCollectionChunk
 
 
 def key_sorted_dict_str(mset):
@@ -134,10 +134,10 @@ def main():
         out = sys.stdout
 
     if args.input == '-':
-        i_chunk = FeatureCollectionCborChunk(file_obj=sys.stdin)
+        i_chunk = FeatureCollectionChunk(file_obj=sys.stdin)
     else:
         ## this allows Chunk to detect .xz and .gpg
-        i_chunk = FeatureCollectionCborChunk(args.input)
+        i_chunk = FeatureCollectionChunk(args.input)
 
     if  args.features_to_show:
         args.features_to_show = set(args.features_to_show)
