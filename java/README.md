@@ -33,7 +33,7 @@ File f = new File("output.fc");
 mapper.writeValue(f, fc);
 ```
 
-Chunk files as written by the Python `FeatureCollectionCborChunk`
+Chunk files as written by the Python `FeatureCollectionChunk`
 class are simply concatenated CBOR objects.  These can also be easily
 read and written using the Jackson `ObjectMapper`:
 
