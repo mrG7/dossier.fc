@@ -81,6 +81,9 @@ class FeatureTypeRegistry (object):
                 % (ty, self._inverse, feat_name, obj))
         return self._inverse[ty]
 
+    def is_serializeable(self, obj):
+        return type(obj) in self._inverse
+
     def _get(self, type_name):
         self._load_entry_points()
         if type_name not in self._registry:
@@ -151,7 +154,8 @@ def is_native_string_counter(cbor_data):
 
 
 def is_counter(obj):
-    return isinstance(obj, collections.Counter)
+    return isinstance(obj, collections.Counter) \
+        or getattr(obj, 'is_counter', False)
 
 
 class FeatureCollectionChunk(streamcorpus.CborChunk):
@@ -347,6 +351,8 @@ class FeatureCollection(collections.MutableMapping):
             elif isinstance(feat, unicode):
                 # A Unicode string.
                 loads = registry.get('Unicode').loads
+            elif registry.is_serializeable(feat):
+                loads = lambda x: x
             else:
                 raise SerializationError(
                     'Unknown CBOR value (type: %r): %r' % (type(feat), feat))
