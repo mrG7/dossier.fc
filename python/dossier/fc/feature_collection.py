@@ -552,8 +552,8 @@ class FeatureCollection(collections.MutableMapping):
             raise ReadOnlyException()
         if coef == 1:
             return self
-        for _, v in self._counters():
-            v *= coef
+        for name in self._counters():
+            self[name] *= coef
         return self
 
     def total(self):
