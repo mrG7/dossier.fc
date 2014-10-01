@@ -338,6 +338,9 @@ class FeatureCollection(collections.MutableMapping):
         for name, feat in data.iteritems():
             if not isinstance(name, unicode):
                 name = name.decode('utf-8')
+            if name.startswith(self.EPHEMERAL_PREFIX):
+                self._features[name] = feat
+                continue
 
             if isinstance(feat, cbor.Tag):
                 if feat.tag not in cbor_tags_to_names:
@@ -418,6 +421,12 @@ class FeatureCollection(collections.MutableMapping):
             # because it's read-only.
             return registry.get_read_only(
                 FeatureTypeRegistry.DEFAULT_FEATURE_TYPE_NAME)
+        if key.startswith(self.EPHEMERAL_PREFIX):
+            # When the feature name starts with an ephemeral prefix, then
+            # we have no idea what it should be---anything goes. Therefore,
+            # the caller must set the initial value themselves (and we must
+            # be careful not to get too eager with relying on __missing__).
+            raise KeyError(key)
         default_value = registry.get_constructor(
             FeatureTypeRegistry.DEFAULT_FEATURE_TYPE_NAME)()
         self[key] = default_value
