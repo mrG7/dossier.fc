@@ -40,12 +40,6 @@ from subprocess import Popen, PIPE
  
  
 def call_git_describe(abbrev=4):
-    dot_git = os.path.join(
-        os.path.dirname(os.path.abspath(__file__)),
-        '.git')
-    if not os.path.exists(dot_git):
-        return None, None
-
     describe_line = None
     p = None
     try:
