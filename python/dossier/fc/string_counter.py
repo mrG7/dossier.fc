@@ -136,7 +136,9 @@ class StringCounter(Counter):
         if isinstance(key, unicode):
             return key
         if isinstance(key, str):
-            return unicode(key)
+            # On my system, the default encoding is `ascii`, so let's
+            # explicitly say UTF-8?
+            return unicode(key, 'utf-8')
         raise TypeError(key)
 
     @mutates
