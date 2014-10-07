@@ -46,7 +46,7 @@ setup(
     zip_safe=False,
     entry_points={
         'console_scripts': [
-            'dossier-features-dump = dossier.fc.dump:main',
+            'dossier.fc = dossier.fc.dump:main',
         ],
     },
 )
