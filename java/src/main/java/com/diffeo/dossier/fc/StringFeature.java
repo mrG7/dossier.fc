@@ -48,16 +48,13 @@ public class StringFeature implements Feature {
         if (readOnly) {
             throw new UnsupportedOperationException("read-only string value");
         }
-
         value = v;
     }
 
-    @Override
     public boolean isReadOnly() {
         return readOnly;
     }
 
-    @Override
     public void setReadOnly(boolean ro) {
         readOnly = ro;
     }

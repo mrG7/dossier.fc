@@ -150,6 +150,11 @@ public class FeatureCollection {
 
     public static class FeatureDeserializer
         extends StdDeserializer<Feature> {
+      /**
+       * generated serial version ID
+       */
+      private static final long serialVersionUID = 1L;
+
         public FeatureDeserializer() {
             super(Feature.class);
         }
