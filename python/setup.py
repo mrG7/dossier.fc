@@ -38,15 +38,19 @@ setup(
     ],
     install_requires=[
         'cbor >= 0.1.12',
-        'pytest',
-        'pytest-diffeo >= 0.1.4',
         'streamcorpus >= 0.3.27',
     ],
+    extras_require={
+        'unittest': [
+            'pytest',
+        ],
+    },
     include_package_data=True,
     zip_safe=False,
     entry_points={
         'console_scripts': [
             'dossier.fc = dossier.fc.dump:main',
+            'dossier.fc.test = dossier.fc.tests.run:main',
         ],
     },
 )

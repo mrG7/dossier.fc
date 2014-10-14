@@ -7,14 +7,11 @@
 from __future__ import absolute_import, division, print_function
 from collections import Counter
 from operator import itemgetter
-import time
 
-import pytest
-
-from dossier.fc.tests import counter_type
+from dossier.fc.tests import counter_type  # noqa
 
 
-def test_truncation(counter_type):
+def test_truncation(counter_type):  # noqa
     num = 100
     data = {str(x): x+1 for x in xrange(num)}
 
@@ -32,23 +29,5 @@ def test_truncation(counter_type):
 
     assert set(counter_type(dict(most_common)).items()) == set(counter.items())
 
-    should_be_counter = counter_type({str(x): x+1 for x in xrange(90,100)})
+    should_be_counter = counter_type({str(x): x+1 for x in xrange(90, 100)})
     assert should_be_counter == counter
-
-
-@pytest.mark.performance
-def test_truncation_speed(counter_type):
-    for x in range(4,7):
-        num = 10**x
-        data = {unicode(x): x+1 for x in xrange(num)}
-
-        counter = counter_type(data)
-
-        truncation_length = 10
-        start_time = time.time()
-        counter.truncate_most_common(truncation_length)
-        elapsed = time.time() - start_time
-        rate = num / elapsed
-        print('%s truncated a counter of size %d in %.3f sec '
-              '--> %.1f items/sec' % (counter_type, num, elapsed, rate))
-        assert len(counter) == truncation_length
