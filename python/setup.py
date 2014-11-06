@@ -24,7 +24,7 @@ setup(
     name=PROJECT,
     version=VERSION,
     description=DESC,
-    license=read_file('LICENSE'),
+    license='MIT/X11 license http://opensource.org/licenses/MIT',
     long_description=read_file('README.md'),
     author=AUTHOR,
     author_email=AUTHOR_EMAIL,
