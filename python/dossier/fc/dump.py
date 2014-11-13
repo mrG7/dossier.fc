@@ -126,6 +126,9 @@ def main():
     parser.add_argument(
         '--lexigraphic', default=False, action='store_true', 
         help='sort counter keys lexigraphically instead of by count')
+    parser.add_argument(
+        '--limit', default=None, type=int, metavar='LIMIT',
+        help='stop after reading LIMIT records')
     args = parser.parse_args()
 
     if args.output:
@@ -142,6 +145,7 @@ def main():
     if  args.features_to_show:
         args.features_to_show = set(args.features_to_show)
 
+    count = 0
     for fc in i_chunk:
         if args.column_view:
             out_str = only_specific_multisets(fc, args.features_to_show)
@@ -150,8 +154,11 @@ def main():
                 fc, features_to_show=args.features_to_show, 
                 max_keys=args.max_keys, lexigraphic=args.lexigraphic)
         if out_str:
-            out.write(out_str) 
+            out.write(out_str.encode('utf-8'))
             out.write('\n')
+        count += 1
+        if (args.limit is not None) and (count >= args.limit):
+            break
 
 if __name__ == '__main__':
     main()
