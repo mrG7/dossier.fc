@@ -295,16 +295,7 @@ class FeatureCollection(collections.MutableMapping):
     @classmethod
     def loads(cls, data):
         '''Create a feature collection from a CBOR byte string.'''
-        # Calling `str` on `data` seems suspicious, but the MySQL kvlayer
-        # interface returns a `bytearray`, and it appears `cbor` cannot
-        # handle a `bytearray`.
-        #
-        # Probably the right thing to do is to fix CBOR, but for now, just
-        # convert `data` to an actual `str`. If `data` is a str, this should
-        # be a no-op. But if `data` is a `bytearray`, then this will
-        # unfortunately create a copy. (Empirically observed using `timeit`.)
-        # ---AG
-        rep = cbor.loads(str(data))
+        rep = cbor.loads(data)
         if not isinstance(rep, collections.Sequence):
             raise SerializationError('expected a CBOR list')
         if len(rep) != 2:
