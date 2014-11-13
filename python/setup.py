@@ -37,7 +37,7 @@ setup(
         'License :: OSI Approved :: MIT License',
     ],
     install_requires=[
-        'cbor >= 0.1.12',
+        'cbor >= 0.1.13',
         'streamcorpus >= 0.3.27',
     ],
     extras_require={
