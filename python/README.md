@@ -24,7 +24,7 @@ Currently, `dossier.fc` requires Python 2.7. It is not yet Python 3 compatible.
 ### Documentation
 
 API documentation with examples is available as part of the Dossier Stack 
-documentation: http://diffeo.com/dossier-stack
+documentation: http://diffeo.com/products/dossier-stack
 
 
 ### Examples and basic usage
