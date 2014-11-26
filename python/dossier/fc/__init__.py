@@ -12,11 +12,13 @@ bits of information about some entity of interest.  The weights in the
 underlying counters can be used to indicate how common a particular
 value is, or how many times it appears in the source documents.
 
-    president = FeatureCollection()
-    president['NAME']['Barack Obama'] += 1
-    president['entity_type']['PER'] += 1
-    president['PER_ADDRESS']['White House'] += 1
-    president['PER_ADDRESS']['1600 Pennsylvania Ave.'] += 1
+    .. code-block:: python
+
+        president = FeatureCollection()
+        president['NAME']['Barack Obama'] += 1
+        president['entity_type']['PER'] += 1
+        president['PER_ADDRESS']['White House'] += 1
+        president['PER_ADDRESS']['1600 Pennsylvania Ave.'] += 1
 
 Feature collections can have representations other than the basic
 string-counter representation; these representations may not preserve
