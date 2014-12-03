@@ -193,7 +193,7 @@ class StringCounter(Counter):
 
         :type truncation_length: int
         '''
-        keep_keys = map(itemgetter(0), self.most_common(truncation_length))
+        keep_keys = {v[0] for v in self.most_common(truncation_length)}
         for key in self.keys():
             if key not in keep_keys:
                 self.pop(key)
