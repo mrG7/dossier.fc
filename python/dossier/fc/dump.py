@@ -39,7 +39,7 @@ def repr_feature(feature, max_keys=100, indent=8, lexigraphic=False):
     elif isinstance(feature, unicode):
         return feature
     else:
-        raise Exception('repr_feature(%r) not yet implemented' % type(feature))
+        return repr(feature)
 
     joiner = ', '
     if isinstance(feature, StringCounter):
@@ -63,7 +63,7 @@ def detailed_view(fc, features_to_show=None, max_keys=100, lexigraphic=False):
     '''
     returns a pretty-printed string describing a
     :class:`dossier.fc.FeatureCollection`.
-    
+
     @features_to_show: list of features to include, defaults to None
     meaning include all.
 
@@ -118,13 +118,13 @@ def main():
         '-f', '--feature', metavar='FEATURE_NAME', default=[],
         dest='features_to_show', action='append', help='only print these features')
     parser.add_argument(
-        '--column-view', default=False, action='store_true', 
+        '--column-view', default=False, action='store_true',
         help='include this multiset in print out')
     parser.add_argument(
-        '--max-keys', default=100, type=int, 
+        '--max-keys', default=100, type=int,
         help='number of keys to show in counters')
     parser.add_argument(
-        '--lexigraphic', default=False, action='store_true', 
+        '--lexigraphic', default=False, action='store_true',
         help='sort counter keys lexigraphically instead of by count')
     parser.add_argument(
         '--limit', default=None, type=int, metavar='LIMIT',
@@ -151,7 +151,7 @@ def main():
             out_str = only_specific_multisets(fc, args.features_to_show)
         else:
             out_str = detailed_view(
-                fc, features_to_show=args.features_to_show, 
+                fc, features_to_show=args.features_to_show,
                 max_keys=args.max_keys, lexigraphic=args.lexigraphic)
         if out_str:
             out.write(out_str.encode('utf-8'))
