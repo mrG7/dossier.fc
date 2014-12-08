@@ -49,7 +49,7 @@ def repr_feature(feature, max_keys=100, indent=8, lexigraphic=False):
             recs = map(lambda x: '%d: %r' % (x[1], x[0]), recs)
             joiner = '\n' + ' ' * indent
         else:
-            recs = map(lambda x: '%r: %d' % (x[0], x[1]), recs)
+            recs = map(lambda x: '%r: %r' % (x[0], x[1]), recs)
             joiner = ', '
 
     len_feature = len(feature)
