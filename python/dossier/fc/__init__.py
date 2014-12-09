@@ -36,6 +36,12 @@ sequentially in flat files using
 .. autoclass:: StringCounter
    :show-inheritance:
 
+.. autoclass:: SparseVector
+   :show-inheritance:
+
+.. autoclass:: DenseVector
+   :show-inheritance:
+
 .. autoclass:: FeatureCollectionChunk
    :show-inheritance:
 
@@ -50,13 +56,14 @@ sequentially in flat files using
    Copyright 2012-2014 Diffeo, Inc.
 
 '''
+from dossier.fc.exceptions import ReadOnlyException, SerializationError
 from dossier.fc.feature_collection import \
     FeatureCollection, FeatureCollectionChunk
 from dossier.fc.string_counter import StringCounter
-from dossier.fc.exceptions import ReadOnlyException, SerializationError
+from dossier.fc.vector import DenseVector, SparseVector
 
 __all__ = [
     'FeatureCollection', 'FeatureCollectionChunk',
-    'StringCounter',
+    'StringCounter', 'SparseVector', 'DenseVector',
     'ReadOnlyException', 'SerializationError',
 ]

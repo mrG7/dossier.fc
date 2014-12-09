@@ -25,7 +25,8 @@ import pkg_resources
 import streamcorpus
 
 from dossier.fc.exceptions import ReadOnlyException, SerializationError
-from dossier.fc.string_counter import StringCounterSerializer
+from dossier.fc.string_counter import StringCounterSerializer, StringCounter
+from dossier.fc.vector import SparseVector, DenseVector
 
 
 logger = logging.getLogger(__name__)
@@ -68,7 +69,27 @@ class FeatureTypeRegistry (object):
         objects (lists, dictionaries, strings, numbers); and `loads`
         is a callable that takes the response from `dumps` and recreates
         the original representation.
+
+        Note that ``obj.constructor()`` *must* return an
+        object that is an instance of one of the following
+        types: ``unicode``, :class:`dossier.fc.StringCounter`,
+        :class:`dossier.fc.SparseVector` or
+        :class:`dossier.fc.DenseVector`. If it isn't, a
+        :exc:`ValueError` is raised.
         '''
+        ro = obj.constructor()
+        if name not in cbor_names_to_tags:
+            print(name)
+            raise ValueError(
+                'Unsupported feature type name: "%s". '
+                'Allowed feature type names: %r'
+                % (name, cbor_names_to_tags.keys()))
+        if not is_valid_feature_instance(ro):
+            raise ValueError(
+                'Constructor for "%s" returned "%r" which has an unknown '
+                'sub type "%r". (mro: %r). Object must be an instance of '
+                'one of the allowed types: %r'
+                % (name, ro, type(ro), type(ro).mro(), ALLOWED_FEATURE_TYPES))
         self._registry[name] = {'obj': obj, 'ro': obj.constructor()}
         self._inverse[obj.constructor] = name
 
@@ -144,9 +165,7 @@ cbor_names_to_tags = {
     'DenseVector': 55802,
 }
 cbor_tags_to_names = {v: k for k, v in cbor_names_to_tags.items() if v}
-
-registry = FeatureTypeRegistry()
-registry._reset()
+ALLOWED_FEATURE_TYPES = (unicode, StringCounter, SparseVector, DenseVector)
 
 
 def is_native_string_counter(cbor_data):
@@ -156,6 +175,10 @@ def is_native_string_counter(cbor_data):
 def is_counter(obj):
     return isinstance(obj, collections.Counter) \
         or getattr(obj, 'is_counter', False)
+
+
+def is_valid_feature_instance(obj):
+    return isinstance(obj, ALLOWED_FEATURE_TYPES)
 
 
 class FeatureCollectionChunk(streamcorpus.CborChunk):
@@ -389,11 +412,6 @@ class FeatureCollection(collections.MutableMapping):
 
             # This tomfoolery is to support *native untagged* StringCounters.
             if tyname not in native or is_non_native_sc(tyname, encoded):
-                if tyname not in cbor_names_to_tags:
-                    raise SerializationError(
-                        'Feature type "%s" is not supported. Choose from: %s'
-                        % (tyname,
-                           ', '.join(sorted(cbor_names_to_tags.keys()))))
                 encoded = cbor.Tag(cbor_names_to_tags[tyname], encoded)
             fc[name] = encoded
         return fc
@@ -662,3 +680,7 @@ class FeatureCollection(collections.MutableMapping):
         for (k, v) in self._features.iteritems():
             if hasattr(v, 'read_only'):
                 v.read_only = ro
+
+
+registry = FeatureTypeRegistry()
+registry._reset()

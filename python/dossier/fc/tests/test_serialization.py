@@ -14,7 +14,7 @@ from dossier.fc.feature_collection import registry
 from dossier.fc.tests.thing import Thing, ThingSerializer
 
 
-class JsonSerializer(object):
+class JsonSerializer(StringCounter):
     def __init__(self):
         raise NotImplementedError
 
@@ -26,7 +26,7 @@ class JsonSerializer(object):
     def dumps(sc):
         return json.dumps(sc)
 
-    constructor = staticmethod(lambda: StringCounter)
+    constructor = staticmethod(lambda: StringCounter())
 
 
 def test_string_counter_serialize():
@@ -48,7 +48,7 @@ def test_thing_serializer():
         fc['thing1']['another'] = 'more'
         fc['thing1'].do_more_things()
         fc_str = fc.dumps()
-        
+
         fc2 = FeatureCollection.loads(fc_str)
 
         assert fc2['thing1']['another'] == 'more'
@@ -65,7 +65,7 @@ def test_json_serializer():
         fc['thing2']['another'] = 5
         fc['thing3'] = StringCounter(dict(hello='people2'))
         fc_str = fc.dumps()
-        
+
         fc2 = FeatureCollection.loads(fc_str)
 
         assert fc2['thing2']['another'] == 5

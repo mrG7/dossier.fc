@@ -7,8 +7,10 @@
 from __future__ import absolute_import, division, print_function
 import json
 
+from dossier.fc import StringCounter
 
-class Thing(object):
+
+class Thing(StringCounter):
     def __init__(self, blob=None):
         self.data = dict()
         if blob is not None:
