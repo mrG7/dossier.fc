@@ -62,7 +62,7 @@ def test_bundle_default(counter_type):
 
 def test_fc_build_from_dict(counter_type):
     fc = FeatureCollection({
-            'hello': counter_type(Counter('hello')), 
+            'hello': counter_type(Counter('hello')),
             'goodbye': counter_type(Counter('goodbye'))})
     assert Counter(fc['hello'].values()) == Counter({1: 3, 2: 1})
     assert isinstance(fc['hello'], counter_type)
@@ -89,11 +89,11 @@ def test_fc_eq(counter_type):
 
     assert fc1 == fc2
     assert fc1 != fc3
-    
+
 
 def test_fc_meta_adding_complex(counter_type):
     fc = FeatureCollection({
-            'hello': counter_type(Counter('hello')), 
+            'hello': counter_type(Counter('hello')),
             'goodbye': counter_type(Counter('goodbye'))})
     fc2 = FeatureCollection({
             'hello': counter_type(Counter('hello')),
@@ -106,7 +106,7 @@ def test_fc_meta_adding_complex(counter_type):
 
     fc3 -= fc2
     assert Counter(fc3['hello'].values()) == Counter({1: 3, 2: 1})
-    
+
     fc3 -= fc2
     assert Counter(fc3['hello'].values()) == Counter()
 
@@ -287,3 +287,8 @@ def test_subtraction():
     fc3 = fc1 - fc2
 
     assert fc3 == FeatureCollection({'a': {'b': 2}, 'b': {'b': 2}, 'c': {}})
+
+
+def test_get():
+    fc = FeatureCollection()
+    assert fc.get('nada', 5) == 5

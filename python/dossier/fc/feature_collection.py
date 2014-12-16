@@ -609,6 +609,12 @@ class FeatureCollection(collections.MutableMapping):
             return v
         return self.__missing__(key)
 
+    def get(self, key, default=None):
+        if key not in self:
+            return default
+        else:
+            return self._features[key]
+
     def __setitem__(self, key, value):
         if self.read_only:
             raise ReadOnlyException()
