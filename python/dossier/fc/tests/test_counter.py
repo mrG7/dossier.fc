@@ -39,7 +39,7 @@ def test_default(counter_type):
 
     mc['foo'] += counter_type(Counter('dog'))
     mc['foo'] += counter_type(Counter('dog cat'))
-    assert Counter(mc['foo'].values()) == Counter({1: 4, 3: 3})
+    assert Counter(map(abs,mc['foo'].values())) == Counter({1: 4, 3: 3})
 
 
 def test_build_from_dict(counter_type):
@@ -47,7 +47,7 @@ def test_build_from_dict(counter_type):
             'hello': counter_type(Counter('hello')), 
             'goodbye': counter_type(Counter('goodbye'))})
 
-    assert Counter(mc['hello'].values()) == Counter({1: 3, 2: 1})
+    assert Counter(map(abs,mc['hello'].values())) == Counter({1: 3, 2: 1})
     assert isinstance(mc['hello'], counter_type)
 
 
@@ -57,7 +57,7 @@ def test_meta_adding(counter_type):
             'goodbye': counter_type(Counter('goodbye'))})
     mc2 = mc + mc
 
-    assert Counter(mc2['hello'].values()) == Counter({2: 3, 4: 1})
+    assert Counter(map(abs,mc2['hello'].values())) == Counter({2: 3, 4: 1})
 
 
 def test_eq(counter_type):
@@ -84,16 +84,16 @@ def test_meta_adding_complex(counter_type):
             'goodbye': counter_type(Counter('goodbye'))})
     mc3 = mc + mc2
 
-    assert Counter(mc3['hello'].values()) == Counter({2: 3, 4: 1})
+    assert Counter(map(abs,mc3['hello'].values())) == Counter({2: 3, 4: 1})
     mc += mc2
-    assert Counter(mc['hello'].values()) == Counter({2: 3, 4: 1})
+    assert Counter(map(abs,mc['hello'].values())) == Counter({2: 3, 4: 1})
 
     ## isub tests
     mc3 -= mc2
-    assert Counter(mc3['hello'].values()) == Counter({1: 3, 2: 1})
+    assert Counter(map(abs,mc3['hello'].values())) == Counter({1: 3, 2: 1})
     
     mc3 -= mc2
-    assert Counter(mc3['hello'].values()) == Counter()
+    assert Counter(map(abs,mc3['hello'].values())) == Counter()
 
 
 def test_type(counter_type):
