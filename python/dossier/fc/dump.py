@@ -58,7 +58,7 @@ def repr_stringcounter(feature, max_keys=100, indent=8, lexigraphic=False):
     longest_key = max(map(len, map(itemgetter(0), recs)))
     if longest_key > 20:
         # count: str
-        recs = map(lambda x: '%d: %s' % (x[1], x[0]), recs)
+        recs = map(lambda x: '%r: %s' % (x[1], x[0]), recs)
         joiner = '\n' + ' ' * indent
     else:
         # str: count
