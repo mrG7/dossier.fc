@@ -109,7 +109,7 @@ def test_readonly(counter_type):
 
     fc.read_only = False
     fc += fc2
-    assert Counter(fc['hello'].values()) == Counter({2: 3, 4: 1})
+    assert Counter(map(abs,fc['hello'].values())) == Counter({2: 3, 4: 1})
     fc -= fc2
     fc -= fc2
-    assert Counter(fc['hello'].values()) == Counter()
+    assert Counter(map(abs,fc['hello'].values())) == Counter()

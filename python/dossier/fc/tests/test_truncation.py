@@ -25,6 +25,7 @@ def test_truncation(counter_type):  # noqa
     most_common = Counter(data).most_common(truncation_length)
     from_counter = map(itemgetter(1), counter.most_common(truncation_length))
     expected = map(itemgetter(1), most_common)
+    from_counter = map(abs, from_counter)
     assert from_counter == expected
 
     assert set(counter_type(dict(most_common)).items()) == set(counter.items())

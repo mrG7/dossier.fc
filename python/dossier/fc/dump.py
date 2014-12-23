@@ -7,7 +7,7 @@
 from operator import itemgetter
 import sys
 
-from dossier.fc import StringCounter, FeatureCollectionChunk
+from dossier.fc import StringCounter, FeatureCollection, FeatureCollectionChunk
 
 
 def key_sorted_dict_str(mset):
@@ -29,28 +29,41 @@ def repr_feature(feature, max_keys=100, indent=8, lexigraphic=False):
     @lexigraphic: instead of sorting counters by count (default), sort
     keys lexigraphically
     '''
+    if isinstance(feature, (str, bytes)):
+        try:
+            ustr = feature.decode('utf8')
+            return ustr
+        except:
+            # failure to decode, not actually utf8, other binary data
+            return repr(feature)
+
     if isinstance(feature, StringCounter):
-        if lexigraphic:
-            recs = list(feature.iteritems())
-            recs.sort(key=itemgetter(0))
-            recs = recs[:max_keys]
-        else:
-            recs = feature.most_common(max_keys)
+        return repr_stringcounter(feature, max_keys, indent, lexigraphic)
     elif isinstance(feature, unicode):
         return feature
     else:
         return repr(feature)
 
-    joiner = ', '
-    if isinstance(feature, StringCounter):
-        ## might have very long keys, e.g. whole sentences or URLs
-        longest_key = max(map(len, map(itemgetter(0), recs)))
-        if longest_key > 20:
-            recs = map(lambda x: '%d: %r' % (x[1], x[0]), recs)
-            joiner = '\n' + ' ' * indent
-        else:
-            recs = map(lambda x: '%r: %r' % (x[0], x[1]), recs)
-            joiner = ', '
+    assert False, 'internal logic failure, no branch taken'
+
+
+def repr_stringcounter(feature, max_keys=100, indent=8, lexigraphic=False):
+    if lexigraphic:
+        recs = list(feature.iteritems())
+        recs.sort(key=itemgetter(0))
+        recs = recs[:max_keys]
+    else:
+        recs = feature.most_common(max_keys)
+
+    longest_key = max(map(len, map(itemgetter(0), recs)))
+    if longest_key > 20:
+        # count: str
+        recs = map(lambda x: '%d: %s' % (x[1], x[0]), recs)
+        joiner = '\n' + ' ' * indent
+    else:
+        # str: count
+        recs = map(lambda x: '%s: %r' % (x[0], x[1]), recs)
+        joiner = ', '
 
     len_feature = len(feature)
     if len_feature > max_keys:
@@ -59,7 +72,7 @@ def repr_feature(feature, max_keys=100, indent=8, lexigraphic=False):
     return joiner.join(recs)
 
 
-def detailed_view(fc, features_to_show=None, max_keys=100, lexigraphic=False):
+def detailed_view(fc, features_to_show=None, max_keys=100, lexigraphic=False, display_only=True):
     '''
     returns a pretty-printed string describing a
     :class:`dossier.fc.FeatureCollection`.
@@ -68,17 +81,28 @@ def detailed_view(fc, features_to_show=None, max_keys=100, lexigraphic=False):
     meaning include all.
 
     @lexigraphic: passed to repr_feature
+
+    @display_only: if DISPLAY_PREFIX versions of features are present, only show those. (default True)
     '''
-    if 'NAME' in fc:
-        top_lines = ['NAME: %r' % key_sorted_dict_str( fc.get('NAME') )]
+    if '#NAME' in fc:
+        top_lines = ['NAME: %s' % key_sorted_dict_str( fc.get('#NAME') )]
+    elif '#NOM' in fc:
+        top_lines = ['NOM: %s' % key_sorted_dict_str( fc.get('#NOM') )]
+    elif 'NAME' in fc:
+        top_lines = ['NAME: %s' % key_sorted_dict_str( fc.get('NAME') )]
     elif 'NOM' in fc:
-        top_lines = ['NOM: %r' % key_sorted_dict_str( fc.get('NOM') )]
+        top_lines = ['NOM: %s' % key_sorted_dict_str( fc.get('NOM') )]
     else:
         top_lines = ['no-NAME, no-NOM']
     bottom_lines = []
     feature_names = fc.keys()
+    display_only = _check_display_only(display_only, feature_names)
     feature_names.sort()
+    hidden_count = 0
     for key in feature_names:
+        if display_only and (not key.startswith(FeatureCollection.DISPLAY_PREFIX)):
+            hidden_count += 1
+            continue
         if key in fc and fc[key]:
             if features_to_show and key not in features_to_show:
                 continue
@@ -89,7 +113,19 @@ def detailed_view(fc, features_to_show=None, max_keys=100, lexigraphic=False):
                 bottom_lines.append( '    %s: %s' % (key, repr) )
             else:
                 top_lines.append( '    %s: %s' % (key, repr))
+    if hidden_count:
+        bottom_lines.append('    (and %s hidden features)' % (hidden_count,))
     return '\n'.join(top_lines + bottom_lines)
+
+
+def _check_display_only(display_only, feature_names):
+    if not display_only:
+        return False
+    for key in feature_names:
+        if key.startswith(FeatureCollection.DISPLAY_PREFIX):
+            return True
+    # no DISPLAY_PREFIX features found, show everything anyway
+    return False
 
 
 def only_specific_multisets(ent, multisets_to_show):

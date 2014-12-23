@@ -57,14 +57,14 @@ def test_bundle_default(counter_type):
         'failed and made %s' % type(fc['foo'])
     fc['foo'] += counter_type(Counter('dog'))
     fc['foo'] += counter_type(Counter('dog cat'))
-    assert Counter(fc['foo'].values()) == Counter({1: 4, 3: 3})
+    assert Counter(map(abs,fc['foo'].values())) == Counter({1: 4, 3: 3})
 
 
 def test_fc_build_from_dict(counter_type):
     fc = FeatureCollection({
             'hello': counter_type(Counter('hello')),
             'goodbye': counter_type(Counter('goodbye'))})
-    assert Counter(fc['hello'].values()) == Counter({1: 3, 2: 1})
+    assert Counter(map(abs,fc['hello'].values())) == Counter({1: 3, 2: 1})
     assert isinstance(fc['hello'], counter_type)
 
 
@@ -73,7 +73,7 @@ def test_fc_meta_adding(counter_type):
             'hello': counter_type(Counter('hello')),
             'goodbye': counter_type(Counter('goodbye'))})
     fc2 = fc + fc
-    assert Counter(fc2['hello'].values()) == Counter({2: 3, 4: 1})
+    assert Counter(map(abs,fc2['hello'].values())) == Counter({2: 3, 4: 1})
 
 
 def test_fc_eq(counter_type):
@@ -100,15 +100,15 @@ def test_fc_meta_adding_complex(counter_type):
             'goodbye': counter_type(Counter('goodbye'))})
     fc3 = fc + fc2
 
-    assert Counter(fc3['hello'].values()) == Counter({2: 3, 4: 1})
+    assert Counter(map(abs,fc3['hello'].values())) == Counter({2: 3, 4: 1})
     fc += fc2
-    assert Counter(fc['hello'].values()) == Counter({2: 3, 4: 1})
+    assert Counter(map(abs,fc['hello'].values())) == Counter({2: 3, 4: 1})
 
     fc3 -= fc2
-    assert Counter(fc3['hello'].values()) == Counter({1: 3, 2: 1})
+    assert Counter(map(abs,fc3['hello'].values())) == Counter({1: 3, 2: 1})
 
     fc3 -= fc2
-    assert Counter(fc3['hello'].values()) == Counter()
+    assert Counter(map(abs,fc3['hello'].values())) == Counter()
 
 
 def test_string_counter():
@@ -136,7 +136,7 @@ def test_string_counter2():
 
 def test_values(counter_type):
     c = counter_type(Counter('dog'))
-    assert set(map(int, c.values())) == set([1])
+    assert set(map(abs,map(int, c.values()))) == set([1])
     assert len(c.values()) == 3
 
 
@@ -148,13 +148,13 @@ def test_entity(counter_type):
     fc1['bon'] += counter_type(Counter(['Super Cat', 'Small Cat', 'Tiger Fish']))
 
     ## there should be nine items of size 1
-    assert Counter(fc1['bow'].values())[1] == 10, fc1['bow'].items()
+    assert Counter(map(abs,fc1['bow'].values()))[1] == 10, fc1['bow'].items()
 
     ## double the counts, should recurse down
     fc1 += fc1
 
     ## check values doubled
-    assert Counter(fc1['bow'].values())[2] == 10, fc1['bow'].items()
+    assert Counter(map(abs,fc1['bow'].values()))[2] == 10, fc1['bow'].items()
 
     ## serialize/deserialize it
     blob = fc1.dumps()
@@ -185,10 +185,10 @@ def test_multiset_change(counter_type):
     ## set equal to
     test_data = ['big2', 'dog2']
     ent1['bow'] = counter_type(Counter(test_data))
-    assert list(ent1['bow'].values()) == [1,1]
+    assert list(map(abs,ent1['bow'].values())) == [1,1]
 
     ent1['bow'] += counter_type(Counter(test_data))
-    assert list(ent1['bow'].values()) == [2,2]
+    assert list(map(abs,ent1['bow'].values())) == [2,2]
 
 
 def test_serialize_deserialize(counter_type):
