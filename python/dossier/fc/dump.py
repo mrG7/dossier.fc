@@ -129,6 +129,9 @@ def main():
     parser.add_argument(
         '--limit', default=None, type=int, metavar='LIMIT',
         help='stop after reading LIMIT records')
+    parser.add_argument(
+        '--count', action='store_true',
+        help='Output a count of the FCs and nothing else.')
     args = parser.parse_args()
 
     if args.output:
@@ -144,6 +147,9 @@ def main():
 
     if  args.features_to_show:
         args.features_to_show = set(args.features_to_show)
+    if args.count:
+        print sum(1 for _ in i_chunk)
+        sys.exit(0)
 
     count = 0
     for fc in i_chunk:
