@@ -72,7 +72,8 @@ def repr_stringcounter(feature, max_keys=100, indent=8, lexigraphic=False):
     return joiner.join(recs)
 
 
-def detailed_view(fc, features_to_show=None, max_keys=100, lexigraphic=False, display_only=True):
+def detailed_view(fc, features_to_show=None, max_keys=100, lexigraphic=False,
+                  display_only=True):
     '''
     returns a pretty-printed string describing a
     :class:`dossier.fc.FeatureCollection`.
@@ -168,6 +169,9 @@ def main():
     parser.add_argument(
         '--count', action='store_true',
         help='Output a count of the FCs and nothing else.')
+    parser.add_argument(
+        '--show-hidden', action='store_true',
+        help='Show hidden features.')
     args = parser.parse_args()
 
     if args.output:
@@ -194,7 +198,8 @@ def main():
         else:
             out_str = detailed_view(
                 fc, features_to_show=args.features_to_show,
-                max_keys=args.max_keys, lexigraphic=args.lexigraphic)
+                max_keys=args.max_keys, lexigraphic=args.lexigraphic,
+                display_only=not args.show_hidden)
         if out_str:
             out.write(out_str.encode('utf-8'))
             out.write('\n')
