@@ -47,6 +47,9 @@ class FeatureOffsets(MutableMapping):
     def __len__(self): return len(self._ranges)
     def __iter__(self): return iter(self._ranges)
 
+    def __repr__(self):
+        return '%s(%s)' % (self.__class__.__name__, repr(self._ranges))
+
 
 class XpathFeatureOffsets(FeatureOffsets):
     '''Provides Xpath offsets into HTML.'''
@@ -55,6 +58,9 @@ class XpathFeatureOffsets(FeatureOffsets):
         for xpranges in self[k]:
             slices.append(' '.join(xp.slice_node(source) for xp in xpranges))
         return slices
+
+    def to_dict(self):
+        return XpathFeatureOffsetsSerializer.dumps(self)
 
 
 class XpathFeatureOffsetsSerializer(object):
