@@ -8,7 +8,6 @@
 from __future__ import absolute_import, division, print_function
 from collections import Counter, Mapping
 from functools import wraps
-from operator import itemgetter
 
 from dossier.fc.exceptions import ReadOnlyException
 

@@ -25,160 +25,13 @@ import pkg_resources
 import streamcorpus
 
 from dossier.fc.exceptions import ReadOnlyException, SerializationError
+from dossier.fc.feature_offsets import \
+    XpathFeatureOffsetsSerializer, XpathFeatureOffsets
 from dossier.fc.string_counter import StringCounterSerializer, StringCounter
 from dossier.fc.vector import SparseVector, DenseVector
 
 
 logger = logging.getLogger(__name__)
-
-
-class UnicodeSerializer(object):
-    def __init__(self):
-        raise NotImplementedError()
-
-    # cbor natively supports Unicode, so we can use the identity function.
-    loads = staticmethod(lambda x: x)
-    dumps = staticmethod(lambda x: x)
-    constructor = unicode
-
-
-class FeatureTypeRegistry (object):
-    '''
-    This is a pretty bogus class that has exactly one instance. Its
-    purpose is to guarantee the correct lazy loading of entry points
-    into the registry.
-    '''
-    ENTRY_POINT_GROUP = 'dossier.fc.feature_types'
-    DEFAULT_FEATURE_TYPE_NAME = 'StringCounter'
-
-    def __init__(self):
-        self._registry = {}
-        self._inverse = {}
-        self._entry_points = False
-
-    def add(self, name, obj):
-        '''Register a new feature serializer.
-
-        The feature type should be one of the fixed set of feature
-        representations, and `name` should be one of ``StringCounter``,
-        ``SparseVector``, or ``DenseVector``.  `obj` is a describing
-        object with three fields: `constructor` is a callable that
-        creates an empty instance of the representation; `dumps` is
-        a callable that takes an instance of the representation and
-        returns a JSON-compatible form made of purely primitive
-        objects (lists, dictionaries, strings, numbers); and `loads`
-        is a callable that takes the response from `dumps` and recreates
-        the original representation.
-
-        Note that ``obj.constructor()`` *must* return an
-        object that is an instance of one of the following
-        types: ``unicode``, :class:`dossier.fc.StringCounter`,
-        :class:`dossier.fc.SparseVector` or
-        :class:`dossier.fc.DenseVector`. If it isn't, a
-        :exc:`ValueError` is raised.
-        '''
-        ro = obj.constructor()
-        if name not in cbor_names_to_tags:
-            print(name)
-            raise ValueError(
-                'Unsupported feature type name: "%s". '
-                'Allowed feature type names: %r'
-                % (name, cbor_names_to_tags.keys()))
-        if not is_valid_feature_instance(ro):
-            raise ValueError(
-                'Constructor for "%s" returned "%r" which has an unknown '
-                'sub type "%r". (mro: %r). Object must be an instance of '
-                'one of the allowed types: %r'
-                % (name, ro, type(ro), type(ro).mro(), ALLOWED_FEATURE_TYPES))
-        self._registry[name] = {'obj': obj, 'ro': obj.constructor()}
-        self._inverse[obj.constructor] = name
-
-    def feature_type_name(self, feat_name, obj):
-        ty = type(obj)
-        if ty not in self._inverse:
-            raise SerializationError(
-                'Python type "%s" is not in the feature type registry: %r\n\n'
-                'The offending feature (%s): %r'
-                % (ty, self._inverse, feat_name, obj))
-        return self._inverse[ty]
-
-    def is_serializeable(self, obj):
-        return type(obj) in self._inverse
-
-    def _get(self, type_name):
-        self._load_entry_points()
-        if type_name not in self._registry:
-            raise SerializationError(
-                'Feature type %r not in feature type registry: %r'
-                % (type_name, self._registry))
-        return self._registry[type_name]
-
-    def get(self, type_name):
-        return self._get(type_name)['obj']
-
-    def get_constructor(self, type_name):
-        return self._get(type_name)['obj'].constructor
-
-    def get_read_only(self, type_name):
-        return self._get(type_name)['ro']
-
-    def types(self):
-        self._load_entry_points()
-        return self._registry.keys()
-
-    def _load_entry_points(self):
-        if self._entry_points:
-            return
-        self._entry_points = True
-
-        for epoint in pkg_resources.iter_entry_points(self.ENTRY_POINT_GROUP):
-            try:
-                obj = epoint.load()
-            except (ImportError, pkg_resources.DistributionNotFound):
-                import traceback
-                logger.warn(traceback.format_exc())
-                continue
-            self.add(epoint.name, obj)
-
-    def _reset(self):
-        self._entry_points = False
-        self._registry = {}
-        self._inverse = {}
-        self.add('StringCounter', StringCounterSerializer)
-        self.add('Unicode', UnicodeSerializer)
-
-    def __enter__(self):
-        return self
-
-    def __exit__(self, *args):
-        self._reset()
-
-cbor_names_to_tags = {
-    # Tagged just in case someone wants to changed the binary format.
-    # By default, FeatureCollection will deserialize it as a special case
-    # into a dict of {unicode |--> int} with no tag.
-    'StringCounter': 55800,
-    # Not tagged because CBOR supports it natively.
-    'Unicode': None,
-    # These are *always* tagged.
-    'SparseVector': 55801,
-    'DenseVector': 55802,
-}
-cbor_tags_to_names = {v: k for k, v in cbor_names_to_tags.items() if v}
-ALLOWED_FEATURE_TYPES = (unicode, StringCounter, SparseVector, DenseVector)
-
-
-def is_native_string_counter(cbor_data):
-    return isinstance(cbor_data, dict)
-
-
-def is_counter(obj):
-    return isinstance(obj, collections.Counter) \
-        or getattr(obj, 'is_counter', False)
-
-
-def is_valid_feature_instance(obj):
-    return isinstance(obj, ALLOWED_FEATURE_TYPES)
 
 
 class FeatureCollectionChunk(streamcorpus.CborChunk):
@@ -263,7 +116,6 @@ class FeatureCollection(collections.MutableMapping):
     ``#name`` that is human-readable, while converting the original
     feature to a form that is machine-readable only; for instance,
     replacing strings with integers for faster comparison.
-
     '''
 
     EPHEMERAL_PREFIX = '_'
@@ -271,8 +123,10 @@ class FeatureCollection(collections.MutableMapping):
 
     :meth:`to_dict` and :meth:`dumps` will not write out features
     that begin with this character.
-
     '''
+
+    OFFSET_PREFIX = '@'
+    '''Prefix on names of features that contain offsets.'''
 
     @staticmethod
     def register_serializer(feature_type, obj):
@@ -433,20 +287,19 @@ class FeatureCollection(collections.MutableMapping):
         return 'FeatureCollection(%r)' % self._features
 
     def __missing__(self, key):
+        default_tyname = FeatureTypeRegistry.get_default_feature_type_name(key)
         if self.read_only:
             # reaturn a read-only instance of the default type, of
             # which there is one, because we'll only ever need one,
             # because it's read-only.
-            return registry.get_read_only(
-                FeatureTypeRegistry.DEFAULT_FEATURE_TYPE_NAME)
+            return registry.get_read_only(default_tyname)
         if key.startswith(self.EPHEMERAL_PREFIX):
             # When the feature name starts with an ephemeral prefix, then
             # we have no idea what it should be---anything goes. Therefore,
             # the caller must set the initial value themselves (and we must
             # be careful not to get too eager with relying on __missing__).
             raise KeyError(key)
-        default_value = registry.get_constructor(
-            FeatureTypeRegistry.DEFAULT_FEATURE_TYPE_NAME)()
+        default_value = registry.get_constructor(default_tyname)()
         self[key] = default_value
         return default_value
 
@@ -686,6 +539,173 @@ class FeatureCollection(collections.MutableMapping):
         for (k, v) in self._features.iteritems():
             if hasattr(v, 'read_only'):
                 v.read_only = ro
+
+
+class FeatureTypeRegistry (object):
+    '''
+    This is a pretty bogus class that has exactly one instance. Its
+    purpose is to guarantee the correct lazy loading of entry points
+    into the registry.
+    '''
+    ENTRY_POINT_GROUP = 'dossier.fc.feature_types'
+    DEFAULT_FEATURE_TYPE_NAME = 'StringCounter'
+    DEFAULT_FEATURE_TYPE_PREFIX_NAMES = {
+        FeatureCollection.DISPLAY_PREFIX: 'StringCounter',
+        FeatureCollection.EPHEMERAL_PREFIX: 'StringCounter',
+        FeatureCollection.OFFSET_PREFIX: 'FeatureOffsets',
+    }
+
+    @classmethod
+    def get_default_feature_type_name(cls, feature_name):
+        by_prefix = cls.DEFAULT_FEATURE_TYPE_PREFIX_NAMES.get(feature_name[0])
+        if by_prefix is None:
+            return cls.DEFAULT_FEATURE_TYPE_NAME
+        else:
+            return by_prefix
+
+    def __init__(self):
+        self._registry = {}
+        self._inverse = {}
+        self._entry_points = False
+
+    def add(self, name, obj):
+        '''Register a new feature serializer.
+
+        The feature type should be one of the fixed set of feature
+        representations, and `name` should be one of ``StringCounter``,
+        ``SparseVector``, or ``DenseVector``.  `obj` is a describing
+        object with three fields: `constructor` is a callable that
+        creates an empty instance of the representation; `dumps` is
+        a callable that takes an instance of the representation and
+        returns a JSON-compatible form made of purely primitive
+        objects (lists, dictionaries, strings, numbers); and `loads`
+        is a callable that takes the response from `dumps` and recreates
+        the original representation.
+
+        Note that ``obj.constructor()`` *must* return an
+        object that is an instance of one of the following
+        types: ``unicode``, :class:`dossier.fc.StringCounter`,
+        :class:`dossier.fc.SparseVector` or
+        :class:`dossier.fc.DenseVector`. If it isn't, a
+        :exc:`ValueError` is raised.
+        '''
+        ro = obj.constructor()
+        if name not in cbor_names_to_tags:
+            print(name)
+            raise ValueError(
+                'Unsupported feature type name: "%s". '
+                'Allowed feature type names: %r'
+                % (name, cbor_names_to_tags.keys()))
+        if not is_valid_feature_instance(ro):
+            raise ValueError(
+                'Constructor for "%s" returned "%r" which has an unknown '
+                'sub type "%r". (mro: %r). Object must be an instance of '
+                'one of the allowed types: %r'
+                % (name, ro, type(ro), type(ro).mro(), ALLOWED_FEATURE_TYPES))
+        self._registry[name] = {'obj': obj, 'ro': obj.constructor()}
+        self._inverse[obj.constructor] = name
+
+    def feature_type_name(self, feat_name, obj):
+        ty = type(obj)
+        if ty not in self._inverse:
+            raise SerializationError(
+                'Python type "%s" is not in the feature type registry: %r\n\n'
+                'The offending feature (%s): %r'
+                % (ty, self._inverse, feat_name, obj))
+        return self._inverse[ty]
+
+    def is_serializeable(self, obj):
+        return type(obj) in self._inverse
+
+    def _get(self, type_name):
+        self._load_entry_points()
+        if type_name not in self._registry:
+            raise SerializationError(
+                'Feature type %r not in feature type registry: %r'
+                % (type_name, self._registry))
+        return self._registry[type_name]
+
+    def get(self, type_name):
+        return self._get(type_name)['obj']
+
+    def get_constructor(self, type_name):
+        return self._get(type_name)['obj'].constructor
+
+    def get_read_only(self, type_name):
+        return self._get(type_name)['ro']
+
+    def types(self):
+        self._load_entry_points()
+        return self._registry.keys()
+
+    def _load_entry_points(self):
+        if self._entry_points:
+            return
+        self._entry_points = True
+
+        for epoint in pkg_resources.iter_entry_points(self.ENTRY_POINT_GROUP):
+            try:
+                obj = epoint.load()
+            except (ImportError, pkg_resources.DistributionNotFound):
+                import traceback
+                logger.warn(traceback.format_exc())
+                continue
+            self.add(epoint.name, obj)
+
+    def _reset(self):
+        self._entry_points = False
+        self._registry = {}
+        self._inverse = {}
+        self.add('StringCounter', StringCounterSerializer)
+        self.add('Unicode', UnicodeSerializer)
+        self.add('FeatureOffsets', XpathFeatureOffsetsSerializer)
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *args):
+        self._reset()
+
+
+class UnicodeSerializer(object):
+    def __init__(self):
+        raise NotImplementedError()
+
+    # cbor natively supports Unicode, so we can use the identity function.
+    loads = staticmethod(lambda x: x)
+    dumps = staticmethod(lambda x: x)
+    constructor = unicode
+
+
+cbor_names_to_tags = {
+    # Tagged just in case someone wants to changed the binary format.
+    # By default, FeatureCollection will deserialize it as a special case
+    # into a dict of {unicode |--> int} with no tag.
+    'StringCounter': 55800,
+    # Not tagged because CBOR supports it natively.
+    'Unicode': None,
+    # These are *always* tagged.
+    'SparseVector': 55801,
+    'DenseVector': 55802,
+    'FeatureOffsets': 55803,
+}
+cbor_tags_to_names = {v: k for k, v in cbor_names_to_tags.items() if v}
+ALLOWED_FEATURE_TYPES = (
+    unicode, StringCounter, SparseVector, DenseVector, XpathFeatureOffsets,
+)
+
+
+def is_native_string_counter(cbor_data):
+    return isinstance(cbor_data, dict)
+
+
+def is_counter(obj):
+    return isinstance(obj, collections.Counter) \
+        or getattr(obj, 'is_counter', False)
+
+
+def is_valid_feature_instance(obj):
+    return isinstance(obj, ALLOWED_FEATURE_TYPES)
 
 
 registry = FeatureTypeRegistry()
