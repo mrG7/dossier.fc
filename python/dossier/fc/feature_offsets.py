@@ -53,8 +53,7 @@ class XpathFeatureOffsets(FeatureOffsets):
     def slices(self, source, k):
         slices = []
         for xpranges in self[k]:
-            slices.append(' '.join(xp.slice_node(source, trimmed=True)
-                                   for xp in xpranges))
+            slices.append(' '.join(xp.slice_node(source) for xp in xpranges))
         return slices
 
 
