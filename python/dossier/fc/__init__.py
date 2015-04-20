@@ -59,13 +59,12 @@ sequentially in flat files using
 from dossier.fc.exceptions import ReadOnlyException, SerializationError
 from dossier.fc.feature_collection import \
     FeatureCollection, FeatureCollectionChunk
-from dossier.fc.feature_offsets import FeatureOffsets, XpathFeatureOffsets
+from dossier.fc.feature_tokens import FeatureTokens
 from dossier.fc.string_counter import StringCounter
 from dossier.fc.vector import DenseVector, SparseVector
 
 __all__ = [
     'FeatureCollection', 'FeatureCollectionChunk',
-    'StringCounter', 'SparseVector', 'DenseVector',
-    'FeatureOffsets', 'XpathFeatureOffsets',
+    'StringCounter', 'SparseVector', 'DenseVector', 'FeatureTokens',
     'ReadOnlyException', 'SerializationError',
 ]

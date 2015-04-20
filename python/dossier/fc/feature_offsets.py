@@ -75,7 +75,6 @@ class XpathFeatureOffsetsSerializer(object):
     def __init__(self):
         raise NotImplementedError()
 
-    loads = XpathFeatureOffsets
     constructor = XpathFeatureOffsets
 
     @staticmethod
@@ -84,8 +83,12 @@ class XpathFeatureOffsetsSerializer(object):
         for fname in d:
             for xpranges in d[fname]:
                 xps = []
-                for xp1, i1, xp2, i2 in xpranges:
-                    xps.append(XpathRange(xp1, i1, xp2, i2))
+                for xpr in xpranges:
+                    if xpr is None:
+                        xps.append(None)
+                    else:
+                        xp1, i1, xp2, i2 = xpr
+                        xps.append(XpathRange(xp1, i1, xp2, i2))
                 fo[fname].append(xps)
         return fo
 
@@ -97,8 +100,11 @@ class XpathFeatureOffsetsSerializer(object):
             for xpranges in o[fname]:
                 tuples = []
                 for xp in xpranges:
-                    tuples.append((uni(xp.start_xpath), xp.start_offset,
-                                   uni(xp.end_xpath), xp.end_offset))
+                    if xp is None:
+                        tuples.append(None)
+                    else:
+                        tuples.append((uni(xp.start_xpath), xp.start_offset,
+                                       uni(xp.end_xpath), xp.end_offset))
                 d[fname].append(tuples)
         return d
 
