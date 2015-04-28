@@ -9,11 +9,15 @@ adding/subtracting FeatureCollections does the right thing for its
 constituent features.
 
 .. This software is released under an MIT/X11 open source license.
-   Copyright 2012-2014 Diffeo, Inc.
+   Copyright 2012-2015 Diffeo, Inc.
 
 '''
 from __future__ import absolute_import, division, print_function
-import collections
+try:
+    from collections import Counter
+except ImportError:
+    from backport_collections import Counter
+from collections import MutableMapping, Sequence
 import copy
 from itertools import chain, ifilter, imap
 import logging
@@ -68,7 +72,7 @@ class FeatureCollectionChunk(streamcorpus.CborChunk):
         super(FeatureCollectionChunk, self).__init__(*args, **kwargs)
 
 
-class FeatureCollection(collections.MutableMapping):
+class FeatureCollection(MutableMapping):
     '''
     A collection of features.
 
@@ -177,7 +181,7 @@ class FeatureCollection(collections.MutableMapping):
     def loads(cls, data):
         '''Create a feature collection from a CBOR byte string.'''
         rep = cbor.loads(data)
-        if not isinstance(rep, collections.Sequence):
+        if not isinstance(rep, Sequence):
             raise SerializationError('expected a CBOR list')
         if len(rep) != 2:
             raise SerializationError('expected a CBOR list of 2 items')
@@ -696,7 +700,10 @@ cbor_names_to_tags = {
     'FeatureOffsets': 55803,
     'FeatureTokens': 55804,
 }
-cbor_tags_to_names = {v: k for k, v in cbor_names_to_tags.items() if v}
+cbor_tags_to_names = {}
+for k, v in cbor_names_to_tags.items():
+    if v:
+        cbor_tags_to_names[v] = k
 ALLOWED_FEATURE_TYPES = (
     unicode, StringCounter, SparseVector, DenseVector,
     XpathFeatureOffsets, FeatureTokens,
@@ -708,7 +715,7 @@ def is_native_string_counter(cbor_data):
 
 
 def is_counter(obj):
-    return isinstance(obj, collections.Counter) \
+    return isinstance(obj, Counter) \
         or getattr(obj, 'is_counter', False)
 
 

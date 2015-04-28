@@ -1,11 +1,14 @@
 '''dossier.fc Feature Collections
 
 .. This software is released under an MIT/X11 open source license.
-   Copyright 2012-2014 Diffeo, Inc.
+   Copyright 2012-2015 Diffeo, Inc.
 
 '''
 from __future__ import absolute_import, division, print_function
-from collections import Counter
+try:
+    from collections import Counter
+except ImportError:
+    from backport_collections import Counter
 from operator import itemgetter
 
 from dossier.fc.tests import counter_type  # noqa
@@ -13,7 +16,9 @@ from dossier.fc.tests import counter_type  # noqa
 
 def test_truncation(counter_type):  # noqa
     num = 100
-    data = {str(x): x+1 for x in xrange(num)}
+    data = {}
+    for x in xrange(num):
+        data[str(x)] = x + 1
 
     counter = counter_type(data)
     assert len(counter) == num
@@ -30,5 +35,8 @@ def test_truncation(counter_type):  # noqa
 
     assert set(counter_type(dict(most_common)).items()) == set(counter.items())
 
-    should_be_counter = counter_type({str(x): x+1 for x in xrange(90, 100)})
+    expected = {}
+    for x in xrange(90, 100):
+        expected[str(x)] = x + 1
+    should_be_counter = counter_type(expected)
     assert should_be_counter == counter

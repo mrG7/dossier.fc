@@ -1,13 +1,16 @@
 '''dossier.fc Feature Collections
 
 .. This software is released under an MIT/X11 open source license.
-   Copyright 2012-2014 Diffeo, Inc.
+   Copyright 2012-2015 Diffeo, Inc.
 
 Tests for counters which require support for `__missing__` in
 FeatureCollection.
 '''
 from __future__ import absolute_import, division, print_function
-from collections import Counter
+try:
+    from collections import Counter
+except ImportError:
+    from backport_collections import Counter
 
 import pytest
 

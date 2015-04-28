@@ -44,6 +44,9 @@ setup(
         'unittest': [
             'pytest',
         ],
+        ':python_version=="2.6"': [
+            'backport_collections',
+        ],
     },
     include_package_data=True,
     zip_safe=False,

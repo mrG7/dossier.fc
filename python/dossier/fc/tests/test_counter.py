@@ -1,13 +1,16 @@
 '''dossier.fc Feature Collections
 
 .. This software is released under an MIT/X11 open source license.
-   Copyright 2012-2014 Diffeo, Inc.
+   Copyright 2012-2015 Diffeo, Inc.
 
 tests for FeatureCollection which has __missing__ that detects which kind
 of counter is active.
 '''
 from __future__ import absolute_import, division, print_function
-from collections import Counter
+try:
+    from collections import Counter
+except ImportError:
+    from backport_collections import Counter
 
 from dossier.fc import FeatureCollection, StringCounter
 

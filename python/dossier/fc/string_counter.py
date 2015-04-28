@@ -1,12 +1,16 @@
 '''dossier.fc Feature Collections
 
 .. This software is released under an MIT/X11 open source license.
-   Copyright 2012-2014 Diffeo, Inc.
+   Copyright 2012-2015 Diffeo, Inc.
 
 .. autoclass:: StringCounter
 '''
 from __future__ import absolute_import, division, print_function
-from collections import Counter, Mapping
+try:
+    from collections import Counter
+except ImportError:
+    from backport_collections import Counter
+from collections import Mapping
 from functools import wraps
 
 from dossier.fc.exceptions import ReadOnlyException
@@ -164,8 +168,10 @@ class StringCounter(Counter):
         # class will call this method again
         if iterable:
             if isinstance(iterable, Mapping):
-                iterable = {self._fix_key(k): v
-                            for (k, v) in iterable.iteritems()}
+                new_iterable = {}
+                for (k, v) in iterable.iteritems():
+                    new_iterable[self._fix_key(k)] = v
+                iterable = new_iterable
             else:
                 iterable = (self._fix_key(k) for k in iterable)
         return super(StringCounter, self).update(iterable, **kwargs)
@@ -192,7 +198,7 @@ class StringCounter(Counter):
 
         :type truncation_length: int
         '''
-        keep_keys = {v[0] for v in self.most_common(truncation_length)}
+        keep_keys = set(v[0] for v in self.most_common(truncation_length))
         for key in self.keys():
             if key not in keep_keys:
                 self.pop(key)
