@@ -1,6 +1,11 @@
+'''FeatureTokens carries information connecting feature strings back
+to :class:`~streamcorpus.Offset` objects in `StreamItems.
+
+.. This software is released under an MIT/X11 open source license.
+   Copyright 2012-2015 Diffeo, Inc.
+'''
 from __future__ import absolute_import, division, print_function
 
-import abc
 from collections import MutableMapping
 from itertools import ifilter, imap
 
@@ -17,8 +22,6 @@ class FeatureTokens(MutableMapping):
     This region of text should correspond to the place where the
     feature was extracted.
     '''
-    __metaclass__ = abc.ABCMeta
-
     def __init__(self):
         self._tokens = {}
 

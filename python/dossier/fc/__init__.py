@@ -51,9 +51,8 @@ sequentially in flat files using
 .. autoclass:: SerializationError
    :show-inheritance:
 
-.. Your use of this software is governed by your license agreement.
 .. This software is released under an MIT/X11 open source license.
-   Copyright 2012-2014 Diffeo, Inc.
+   Copyright 2012-2015 Diffeo, Inc.
 
 '''
 from dossier.fc.exceptions import ReadOnlyException, SerializationError
