@@ -60,6 +60,7 @@ from dossier.fc.feature_collection import \
     FeatureCollection, FeatureCollectionChunk
 from dossier.fc.feature_tokens import FeatureTokens
 from dossier.fc.string_counter import StringCounter
+from dossier.fc.geocoords import GeoCoords
 from dossier.fc.vector import DenseVector, SparseVector
 
 __all__ = [
