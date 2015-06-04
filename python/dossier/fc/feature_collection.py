@@ -29,8 +29,6 @@ import pkg_resources
 import streamcorpus
 
 from dossier.fc.exceptions import ReadOnlyException, SerializationError
-from dossier.fc.feature_offsets import \
-    XpathFeatureOffsetsSerializer, XpathFeatureOffsets
 from dossier.fc.feature_tokens import FeatureTokens, FeatureTokensSerializer
 from dossier.fc.string_counter import StringCounterSerializer, StringCounter
 from dossier.fc.vector import SparseVector, DenseVector
@@ -129,9 +127,6 @@ class FeatureCollection(MutableMapping):
     :meth:`to_dict` and :meth:`dumps` will not write out features
     that begin with this character.
     '''
-
-    OFFSET_PREFIX = '@'
-    '''Prefix on names of features that contain offsets.'''
 
     TOKEN_PREFIX = '@'
     '''Prefix on names of features that contain tokens.'''
@@ -560,7 +555,6 @@ class FeatureTypeRegistry (object):
     DEFAULT_FEATURE_TYPE_PREFIX_NAMES = {
         FeatureCollection.DISPLAY_PREFIX: 'StringCounter',
         FeatureCollection.EPHEMERAL_PREFIX: 'StringCounter',
-        # FeatureCollection.OFFSET_PREFIX: 'FeatureOffsets',
         FeatureCollection.TOKEN_PREFIX: 'FeatureTokens',
     }
 
@@ -667,7 +661,6 @@ class FeatureTypeRegistry (object):
         self._inverse = {}
         self.add('StringCounter', StringCounterSerializer)
         self.add('Unicode', UnicodeSerializer)
-        self.add('FeatureOffsets', XpathFeatureOffsetsSerializer)
         self.add('FeatureTokens', FeatureTokensSerializer)
 
     def __enter__(self):
@@ -697,7 +690,6 @@ cbor_names_to_tags = {
     # These are *always* tagged.
     'SparseVector': 55801,
     'DenseVector': 55802,
-    'FeatureOffsets': 55803,
     'FeatureTokens': 55804,
 }
 cbor_tags_to_names = {}
@@ -706,7 +698,7 @@ for k, v in cbor_names_to_tags.items():
         cbor_tags_to_names[v] = k
 ALLOWED_FEATURE_TYPES = (
     unicode, StringCounter, SparseVector, DenseVector,
-    XpathFeatureOffsets, FeatureTokens,
+    FeatureTokens,
 )
 
 
