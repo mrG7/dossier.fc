@@ -30,6 +30,7 @@ import streamcorpus
 
 from dossier.fc.exceptions import ReadOnlyException, SerializationError
 from dossier.fc.feature_tokens import FeatureTokens, FeatureTokensSerializer
+from dossier.fc.geocoords import GeoCoords, GeoCoordsSerializer
 from dossier.fc.string_counter import StringCounterSerializer, StringCounter
 from dossier.fc.vector import SparseVector, DenseVector
 
@@ -130,6 +131,10 @@ class FeatureCollection(MutableMapping):
 
     TOKEN_PREFIX = '@'
     '''Prefix on names of features that contain tokens.'''
+
+
+    GEOCOORDS_PREFIX = '!'
+    '''Prefix on names of features that contain geocoords.'''
 
     @staticmethod
     def register_serializer(feature_type, obj):
@@ -556,6 +561,7 @@ class FeatureTypeRegistry (object):
         FeatureCollection.DISPLAY_PREFIX: 'StringCounter',
         FeatureCollection.EPHEMERAL_PREFIX: 'StringCounter',
         FeatureCollection.TOKEN_PREFIX: 'FeatureTokens',
+        FeatureCollection.GEOCOORDS_PREFIX: 'GeoCoords',
     }
 
     @classmethod
@@ -661,6 +667,7 @@ class FeatureTypeRegistry (object):
         self._inverse = {}
         self.add('StringCounter', StringCounterSerializer)
         self.add('Unicode', UnicodeSerializer)
+        self.add('GeoCoords', GeoCoordsSerializer)
         self.add('FeatureTokens', FeatureTokensSerializer)
 
     def __enter__(self):
@@ -690,7 +697,9 @@ cbor_names_to_tags = {
     # These are *always* tagged.
     'SparseVector': 55801,
     'DenseVector': 55802,
+    # 55803 was FeatureOffsets
     'FeatureTokens': 55804,
+    'GeoCoords': 55805,
 }
 cbor_tags_to_names = {}
 for k, v in cbor_names_to_tags.items():
@@ -699,6 +708,7 @@ for k, v in cbor_names_to_tags.items():
 ALLOWED_FEATURE_TYPES = (
     unicode, StringCounter, SparseVector, DenseVector,
     FeatureTokens,
+    GeoCoords,
 )
 
 

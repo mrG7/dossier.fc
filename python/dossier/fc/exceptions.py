@@ -7,6 +7,8 @@
 .. autoclass:: SerializationError
 
 '''
+import logging
+logger = logging.getLogger(__name__)
 
 class BaseException(Exception):
     '''Base exception for all things in dossier.fc
@@ -36,3 +38,28 @@ class SerializationError(BaseException):
 
     '''
     pass
+
+class NonUnicodeKeyError(BaseException, TypeError):
+    '''Keys in StringCounter, GeoCoords, FeatureTokens must be unicode
+
+    '''
+    def __init__(self, key):
+        message = ('keys in dossier.fc.{StringCounter,'
+                    'GeoCoords,FeatureTokens} must be unicode')
+        if key is not None:
+            message += ' not: %r for %r' % (type(key), key)
+        super(NonUnicodeKeyError, self).__init__(message)
+
+
+def uni(key):
+    '''as a crutch, we allow str-type keys, but they really should be
+    unicode.
+
+    '''
+    if isinstance(key, str):
+        logger.warn('assuming utf8 on: %r', key)
+        return unicode(key, 'utf-8')
+    elif isinstance(key, unicode):
+        return key
+    else:
+        raise NonUnicodeKeyError(key)
