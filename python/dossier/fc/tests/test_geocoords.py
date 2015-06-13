@@ -20,12 +20,12 @@ def test_geo_default():
 
 def test_geo_roundtrip():
     fc = FeatureCollection()
-    fc['!co_LOC']['foo'].append((-55, 22, 0))
+    fc['!co_LOC']['foo'].append((-55, 22, 0, None))
     fc2 = FeatureCollection.loads(fc.dumps())
     assert fc['!co_LOC'] == fc2['!co_LOC']
 
 def test_geocoords():
-    data = {'Boston': [(-72, 44, 2), (99, -22., 1)]}
+    data = {'Boston': [(-72, 44, 2, None), (99, -22., None, 1434218285)]}
 
     geo = GeoCoords(data)
 

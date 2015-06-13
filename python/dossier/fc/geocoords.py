@@ -11,9 +11,18 @@ from itertools import ifilter, imap
 from dossier.fc.exceptions import uni
 
 class GeoCoords(MutableMapping):
-    '''This maps string values to lists of (lon, lat) coords in WGS84.
+    '''This maps string values to lists of space-time coordinates:
+
+        (longitude, latitude, altitude, time)
+
+    where the spatial coordinates are expected to be Earth coordinates
+    in WGS84.  `None` values *are allowed* in the four-tuples, so, for
+    example, if your data lacks altitude or time, set those values to
+    `None`.
 
     '''
+    allowed_types = (float, int, long, type(None))
+
     def __init__(self, data=None):
         self.data = {}
         if data is not None:
@@ -21,11 +30,12 @@ class GeoCoords(MutableMapping):
                 if fname not in self.data:
                     self.data[fname] = []
                 for coord in coords:
-                    if not len(coord) == 3 or \
-                       not all(map(lambda x: isinstance(x, (float, int, long)), coord)):
+                    if not len(coord) == 4 or \
+                       not all(map(lambda x: isinstance(x, self.allowed_types), 
+                                   coord)):
                     # could add range checking here
-                        raise Exception('expecting three-tuples of lon, '
-                                        'lat, alt, and got: %s' % repr(coord))
+                        raise Exception('expecting four-tuples of lon, '
+                                        'lat, alt, time and got: %s' % repr(coord))
                     self.data[fname].append(tuple(coord))
 
     def to_dict(self):
