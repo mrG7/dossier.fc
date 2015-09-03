@@ -21,11 +21,35 @@ class FeatureTokens(MutableMapping):
     to a possibly non-contiguous region of text in the source material.
     This region of text should correspond to the place where the
     feature was extracted.
+
+    That is, feature tokens is a map from feature name to sequences of
+    token pointers. Each sequence of token pointers should correspond
+    to a possibly non-contiguous region of text in the original source
+    text.  Model this by using a contiguous sequence of tokens would
+    fail to capture some real data, so a full sequence of tokens is
+    required.
+
+    In the world of ideas, a single sequence of token pointers should
+    correspond to exactly one feature value in a document. Retrieving
+    the feature value from the original HTML can then be done by
+    concatenating each of the corresponding tokens.  Recall that every
+    token has a *pair* of xpaths, which define a range of text in the
+    HTML.
+
+    See :meth:`tokens`, which is probably the most useful here.
+
     '''
     def __init__(self):
         self._tokens = {}
 
     def tokens(self, si, k):
+        '''`si` is a stream item and `k` is a key in this feature. The purpose
+        of this method is to dereference the token pointers with
+        respect to the given stream item. That is, it translates each
+        sequence of token pointers to a sequence of `Token`.
+
+        '''
+
         for tokens in self[k]:
             yield [si.body.sentences[tagid][sid].tokens[tid]
                    for tagid, sid, tid in tokens]
